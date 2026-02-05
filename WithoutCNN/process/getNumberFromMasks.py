@@ -1,11 +1,11 @@
 import cv2
-from globals import THRESHOLD
+from globals import THRESHOLD, DEBUG
 import numpy as np
 
 def getNumberFromMasks(joined_mask):
 
 	number = 0
-	matches = np.zeros(15)
+	matches = np.zeros(16)
 
 	for i in range(1, 16):
 		# Get template from masks/

@@ -2,26 +2,12 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 from process.getMasks import getMasks 
-from globals import WARP_HEIGHT, WARP_WIDTH, OUTPUT_FOLDER, DEBUG
+from globals import WARP_HEIGHT, WARP_WIDTH
 
 
-def show_rgb(image, title=""):
-	plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)) # Para converter de BGR (cv2 working thing) para RGB (matplotlib working thing)
-	cv2.imwrite(f"{OUTPUT_FOLDER}/{title.replace(' ', '_')}.png", image)
-	plt.title(title)
-
-def show_imgs(imgs_dict):
-	num_imgs = len(imgs_dict)
-	for i, (title, img) in enumerate(imgs_dict.items()):
-		plt.subplot(1, num_imgs, i + 1)
-		show_rgb(img, title)
-
-	if DEBUG:
-		plt.show()
-	
 def order_points(pts):
 
-	soma = pts.sum(axis=1)		 # array auxiliar: [x1 + y1, x2 + y2, x3 + y3, x4 + y4] 
+	soma = pts.sum(axis=1)		 # Obter array auxiliar [x1 + y1, x2 + y2, x3 + y3, x4 + y4] 
 	diff = np.diff(pts, axis=1)  # array auxiliar: [y1 - x1, y2 - x2, y3 - x3, y4 - x4]
 
 	tl = pts[np.argmin(soma)] # A soma minima vai sempre ser Top-Left 
@@ -52,23 +38,15 @@ def get_points(original_img):
 	])
 
 	# Let's now try to get the real thing.
-	# We go to the real thing.
+	# We got the real thing. Yupi
 
 	_, _, joined_mask = getMasks(original_img)
 	joined_mask = cv2.bitwise_not(joined_mask)
-	# joined_mask = cv2.erode(joined_mask, np.ones((5,5), np.uint8), iterations=1)
-	dilated_mask = cv2.dilate(joined_mask, np.ones((5,5), np.uint8), iterations=1)
+	joined_mask = cv2.dilate(joined_mask, np.ones((5,5), np.uint8), iterations=1)
 
 
-	contours, _ = cv2.findContours(dilated_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+	contours, _ = cv2.findContours(joined_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-	show_imgs({
-		"Original Image": original_img,
-		"Joined Mask": cv2.resize(joined_mask, (joined_mask.shape[1]//2, joined_mask.shape[0]//2)),
-		"Joined Mask Dilated": cv2.resize(dilated_mask, (dilated_mask.shape[1]//2, dilated_mask.shape[0]//2)),
-		"Contours": cv2.resize(cv2.drawContours(np.zeros_like(dilated_mask), contours, -1, (255,255,255), 3), (dilated_mask.shape[1]//2, dilated_mask.shape[0]//2)),
-	})
-	
 	square_contour = None
 	max_area = 0
 
@@ -92,17 +70,7 @@ def get_points(original_img):
 	# Ordenar os pontos
 	pontos_origem = order_points(pontos_origem)
 
-	print("pontos de origem\n", pontos_origem)
 	return pontos_origem, pontos_destino
-
-def put_points_in_image(image, points):
-	
-	img_with_points = image.copy()
-
-	for point in points:
-		cv2.circle(img_with_points, (int(point[0]), int(point[1])), 50, (0, 255, 0), -1)
-
-	return img_with_points
 
 def warpPerspective(original_img):
 	
@@ -111,8 +79,6 @@ def warpPerspective(original_img):
 	# Obter warping points
 	pontos_origem, pontos_destino = get_points(original_img)
 	
-	img_with_points = put_points_in_image(original_img, pontos_origem)
-
 	# Obter a matriz de transformacao
 	Transformation_Matriz = cv2.getPerspectiveTransform(pontos_origem, pontos_destino)
 
@@ -120,4 +86,4 @@ def warpPerspective(original_img):
 	new_img = cv2.warpPerspective(original_img, Transformation_Matriz, (700, 700))
 
 
-	return new_img, img_with_points
+	return new_img

@@ -2,7 +2,7 @@ from process.segmentPerspective import segmentPerspective
 from process.warpPerspective import warpPerspective
 from process.getMasks import getMasks
 from process.getNumberFromMasks import getNumberFromMasks
-from globals import OUTPUT_FOLDER
+from globals import OUTPUT_FOLDER, DEBUG
 import numpy as np
 import matplotlib.pyplot as plt
 import cv2
@@ -18,7 +18,8 @@ def show_imgs(imgs_dict):
 		plt.subplot(1, num_imgs, i + 1)
 		show_rgb(img, title)
 
-	plt.show()
+	if DEBUG:
+		plt.show()
 	
 
 # Função para mostrar imagems de matrizes N por N
@@ -31,7 +32,9 @@ def show_matrix_img(matrix, n, title=""):
 			plt.axis('off')
 
 	plt.suptitle(title)
-	plt.show()
+
+	if DEBUG:
+		plt.show()
 
 
 def	main():
