@@ -3,6 +3,6 @@ WARP_WIDTH = 700
 
 OUTPUT_FOLDER = "output"
 
-DEBUG = False
+DEBUG = True
 
 THRESHOLD = 0.4
